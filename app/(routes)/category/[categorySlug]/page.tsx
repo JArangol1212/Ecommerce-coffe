@@ -5,68 +5,52 @@ import { Separator } from "@/components/ui/separator";
 import { ResponseType } from "@/types/response";
 
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import {  FilterControlsCategory } from "./components/filters-control-category";
+
+import { FilterControlsCategory } from "./components/filters-control-category";
 import { SkeletonSchema } from "@/components/skeletonSchema";
 import { ProductCard } from "./components/product-card";
 import { ProductType } from "@/types/product";
 import { useState } from "react";
 
-
 export default function Page() {
   const params = useParams();
-  const { categorySlug } = params;
+  const categorySlug = typeof params.categorySlug === "string" ? params.categorySlug : "";
 
-  const { result, loading, error }: ResponseType = useGetCategoryProducts(categorySlug);
-  
-  const [filterOrigin, setFilterOrigin] = useState('');
-  const [FilterTaste, setFilterTaste] = useState('');
-  const router = useRouter();
+  const { result, loading}: ResponseType = useGetCategoryProducts(categorySlug);
+
+  const [filterOrigin, setFilterOrigin] = useState("");
+  const [FilterTaste, setFilterTaste] = useState("");
  
+
   const filteredProducts =
-  result !== null && !loading
-    ? result.filter((product: ProductType) => {
-        const matchesOrigin = filterOrigin === '' || product.origin === filterOrigin;
-        const matchesTaste = FilterTaste === '' || product.taste === FilterTaste;
-        return matchesOrigin && matchesTaste;
-      })
-    : [];
-
-
+    result !== null && !loading
+      ? result.filter((product: ProductType) => {
+          const matchesOrigin = filterOrigin === "" || product.origin === filterOrigin;
+          const matchesTaste = FilterTaste === "" || product.taste === FilterTaste;
+          return matchesOrigin && matchesTaste;
+        })
+      : [];
 
   return (
     <div className="max-w-6xl py-4 mx-auto sm:py-16 sm:px-24">
-     
-      {result !== null && !loading &&   (
+      {result !== null && !loading && (
         <h1 className="text-3xl font-medium">Café {result[0]?.category?.categoryName}</h1>
-      ) }
-      <Separator/>
+      )}
+      <Separator />
       <div className="sm:flex sm:justify-between">
-         <FilterControlsCategory setFilterOrigin={setFilterOrigin} setFilterTaste={setFilterTaste}/>
+        <FilterControlsCategory setFilterOrigin={setFilterOrigin} setFilterTaste={setFilterTaste} />
 
-         <div className="grid gap-5 sm-8 sm:grid-cols-2 md:grid-cols-3 md:gap-10">
-          {loading && (
-            <SkeletonSchema grid={3}/>
-          ) }
-          {filteredProducts !== null && !loading && (
-            filteredProducts.map((product:ProductType) =>(
-              <ProductCard key={product.id} product={product}/>
+        <div className="grid gap-5 sm-8 sm:grid-cols-2 md:grid-cols-3 md:gap-10">
+          {loading && <SkeletonSchema grid={3} />}
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product: ProductType) => (
+              <ProductCard key={product.id} product={product} />
             ))
-            
+          ) : (
+            !loading && <p>No hay productos con este filtro.</p>
           )}
-          {filteredProducts !== null && !loading && filteredProducts.length === 0 && (
-            <p>No hay productos con este filtro.</p>
-          )}
-
-         </div>
-
-      
-       
-
         </div>
-      
+      </div>
     </div>
   );
-  //m pendiente crear un filtro por 
 }
-
